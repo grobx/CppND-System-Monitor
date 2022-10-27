@@ -1,41 +1,80 @@
+#include "system.h"
+
 #include <unistd.h>
+
 #include <cstddef>
 #include <set>
 #include <string>
 #include <vector>
+#include <unordered_set>
 
+#include "linux_parser.h"
 #include "process.h"
 #include "processor.h"
-#include "system.h"
 
+using std::find_if;
+using std::greater;
 using std::set;
 using std::size_t;
+using std::sort;
 using std::string;
 using std::vector;
-/*You need to complete the mentioned TODOs in order to satisfy the rubric criteria "The student will be able to extract and display basic data about the system."
+using std::unordered_set;
 
-You need to properly format the uptime. Refer to the comments mentioned in format. cpp for formatting the uptime.*/
+System::System() {
+  os_ = LinuxParser::OperatingSystem();
+  kernel_ = LinuxParser::Kernel();
+}
 
-// TODO: Return the system's CPU
+void System::Update() {
+  // Update Processes
+  unordered_set<int> done;
+  for (auto pid : LinuxParser::Pids()) {
+    vector<Process>::iterator prev =
+      find_if(processes_.begin(), processes_.end(),
+              [&pid](const Process& x) { return x.Pid() == pid; });
+    if (prev != processes_.end()) {
+      prev->Update();
+    } else {
+      processes_.emplace_back(Process(pid));
+    }
+    done.insert(pid);
+  }
+  
+  // Remove Non Existant
+  for(auto p = processes_.begin(); p != processes_.end(); ++p) {
+    if (done.find(p->Pid()) == done.end())
+      processes_.erase(p);
+  }
+
+  // Sort Processes Descending
+  sort(processes_.begin(), processes_.end(), greater());
+
+  // Memory Utilization
+  mem_ = LinuxParser::MemoryUtilization();
+
+  // Running Processes
+  proc_run_ = LinuxParser::RunningProcesses();
+
+  // Total Processes
+  proc_tot_ = LinuxParser::TotalProcesses();
+
+  // Up Time
+  time_ = LinuxParser::UpTime();
+}
+
 Processor& System::Cpu() { return cpu_; }
 
-// TODO: Return a container composed of the system's processes
 vector<Process>& System::Processes() { return processes_; }
 
-// TODO: Return the system's kernel identifier (string)
-std::string System::Kernel() { return string(); }
+string System::Kernel() { return kernel_; }
 
-// TODO: Return the system's memory utilization
-float System::MemoryUtilization() { return 0.0; }
+float System::MemoryUtilization() { return mem_; }
 
-// TODO: Return the operating system name
-std::string System::OperatingSystem() { return string(); }
+string System::OperatingSystem() { return os_; }
 
-// TODO: Return the number of processes actively running on the system
-int System::RunningProcesses() { return 0; }
+int System::RunningProcesses() { return proc_run_; }
 
-// TODO: Return the total number of processes on the system
-int System::TotalProcesses() { return 0; }
+int System::TotalProcesses() { return proc_tot_; }
 
-// TODO: Return the number of seconds since the system started running
-long int System::UpTime() { return 0; }
+long int System::UpTime() { return time_; }

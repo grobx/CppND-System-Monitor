@@ -7,21 +7,30 @@
 #include "process.h"
 #include "processor.h"
 
+using std::string;
+using std::vector;
+
 class System {
  public:
-  Processor& Cpu();                   // TODO: See src/system.cpp
-  std::vector<Process>& Processes();  // TODO: See src/system.cpp
-  float MemoryUtilization();          // TODO: See src/system.cpp
-  long UpTime();                      // TODO: See src/system.cpp
-  int TotalProcesses();               // TODO: See src/system.cpp
-  int RunningProcesses();             // TODO: See src/system.cpp
-  std::string Kernel();               // TODO: See src/system.cpp
-  std::string OperatingSystem();      // TODO: See src/system.cpp
+  System();
+  void Update();
+  Processor& Cpu();
+  vector<Process>& Processes();
+  float MemoryUtilization();
+  long UpTime();
+  int TotalProcesses();
+  int RunningProcesses();
+  string Kernel();
+  string OperatingSystem();
 
-  // TODO: Define any necessary private members
  private:
   Processor cpu_ = {};
-  std::vector<Process> processes_ = {};
+  vector<Process> processes_ = {};
+  string kernel_;
+  string os_;
+  float mem_;
+  int proc_run_, proc_tot_;
+  long int time_;
 };
 
 #endif
